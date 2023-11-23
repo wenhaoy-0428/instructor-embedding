@@ -613,6 +613,7 @@ class AbsTaskRetrieval(AbsTask):
         corpus, queries, relevant_docs = self.corpus[split], self.queries[split], self.relevant_docs[split]
 
         try:
+            raise ImportError("CQADupstack is incompatible with latest BEIR")
             if self.description["beir_name"].startswith("cqadupstack"):
                 raise ImportError("CQADupstack is incompatible with latest BEIR")
             from beir.retrieval.search.dense import DenseRetrievalParallelExactSearch as DRPES
@@ -630,7 +631,6 @@ class AbsTaskRetrieval(AbsTask):
                     "DenseRetrievalParallelExactSearch could not be imported from beir. Using DenseRetrievalExactSearch instead."
                 )
                 logger.warning("The parameter target_devices is ignored.")
-
             from beir.retrieval.search.dense import DenseRetrievalExactSearch as DRES
 
             model = model if self.is_dres_compatible(model, is_parallel=False) else DRESModel(model,**kwargs)
@@ -641,7 +641,7 @@ class AbsTaskRetrieval(AbsTask):
                 corpus_chunk_size=corpus_chunk_size if corpus_chunk_size is not None else 50000,
                 **kwargs,
             )
-
+        
         retriever = EvaluateRetrieval(model, score_function=score_function)  # or "cos_sim" or "dot"
         start_time = time()
         results = retriever.retrieve(corpus, queries)
@@ -702,6 +702,8 @@ class DRESModel:
     def encode_queries(self, queries: List[str], batch_size: int, **kwargs):
         new_sentences = []
         print('encode queries')
+        print(f'prompt: {self.args.prompt} task_name: {self.args.task_name}')
+
         if self.args.prompt and isinstance(DEFINITIONS[self.args.prompt][self.args.task_name],str):
             instruction = DEFINITIONS[self.args.prompt][self.args.task_name]
         elif self.args.prompt:
@@ -744,7 +746,6 @@ class DRESModel:
         if type(corpus) is dict:
             sentences = [
                 [instruction, (corpus["title"][i] + self.sep + corpus["text"][i]).strip()]
-                (corpus["title"][i] + self.sep + corpus["text"][i]).strip()
                 if "title" in corpus
                 else corpus["text"][i].strip()
                 for i in range(len(corpus["text"]))
@@ -752,7 +753,7 @@ class DRESModel:
         else:
             sentences = [
                 [instruction, (doc["title"] + self.sep + doc["text"]).strip()]
-                (doc["title"] + self.sep + doc["text"]).strip() if "title" in doc else doc["text"].strip()
+                if "title" in doc else doc["text"].strip()
                 for doc in corpus
             ]
 

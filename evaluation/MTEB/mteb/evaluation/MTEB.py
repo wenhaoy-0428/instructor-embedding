@@ -217,10 +217,10 @@ class MTEB:
             # skip evaluation if results folder exists and overwrite_results is False
             # if output_folder is not None:
             save_path = os.path.join(output_folder, f"{task.description['name']}{task.save_suffix}.json")
-            #     if os.path.exists(save_path) and overwrite_results is False:
-            #         logger.warn(f"WARNING: {task.description['name']} results already exists. Skipping.")
-            #         del self.tasks[0]
-            #         continue
+            if os.path.exists(save_path) and overwrite_results is False:
+                logger.warn(f"WARNING: {task.description['name']} results already exists. Skipping.")
+                del self.tasks[0]
+                continue
 
             try:
                 task_eval_splits = eval_splits if eval_splits is not None else task.description.get("eval_splits", [])
@@ -237,6 +237,7 @@ class MTEB:
                 }
                 for split in task_eval_splits:
                     tick = time()
+                    kwargs['args'].task_name = task.description['name']
                     results = task.evaluate(model, split, batch_size=my_args.batch_size, **kwargs)
                     tock = time()
                     logger.info(f"Evaluation for {task.description['name']} on {split} took {tock - tick:.2f} seconds")
@@ -263,29 +264,29 @@ class MTEB:
             # empty memory
             del self.tasks[0]
 
-        task_name = list(evaluation_results.keys())[0]
-        if task_name in ['MSMARCO',]:
-            r = evaluation_results[task_name]['dev']['ndcg_at_10']
-        elif task_name in ['NQ','NFCorpus','SciFact','CQADupstackWebmastersRetrieval','ArguAna','CQADupstackEnglishRetrieval','CQADupstackGamingRetrieval','CQADupstackGisRetrieval','ClimateFEVER','DBPedia','FEVER','FiQA2018','CQADupstackTexRetrieval','CQADupstackUnixRetrieval','CQADupstackMathematicaRetrieval','CQADupstackStatsRetrieval','CQADupstackPhysicsRetrieval','CQADupstackProgrammersRetrieval','CQADupstackAndroidRetrieval','CQADupstackWordpressRetrieval','HotpotQA','MSMARCOv2','QuoraRetrieval','SCIDOCS','TRECCOVID','Touche2020']:
-            r = evaluation_results[task_name]['test']['ndcg_at_10']
-        elif task_name in ['AmazonCounterfactualClassification','AmazonReviewsClassification','MTOPDomainClassification','MTOPIntentClassification','MassiveIntentClassification','MassiveScenarioClassification',]:
-            r = evaluation_results[task_name]['test']['en']['accuracy']
-        elif task_name in ['ToxicConversationsClassification','ImdbClassification','TweetSentimentExtractionClassification','EmotionClassification','Banking77Classification','AmazonPolarityClassification',]:
-            r = evaluation_results[task_name]['test']['accuracy']
-        elif task_name in ['BiorxivClusteringS2S','MedrxivClusteringS2S','TwentyNewsgroupsClustering','ArxivClusteringP2P','ArxivClusteringS2S','BiorxivClusteringP2P','MedrxivClusteringP2P','RedditClustering','RedditClusteringP2P','StackExchangeClustering','StackExchangeClusteringP2P']:
-            r = evaluation_results[task_name]['test']['v_measure']
-        elif task_name in ['SummEval','STS12','STS13','STS14','STS15','STS16','BIOSSES','SICK-R','STSBenchmark']:
-            r = evaluation_results[task_name]['test']['cos_sim']['spearman']
-        elif task_name in ['STS17']:
-            r = evaluation_results[task_name]['test']['en-en']['cos_sim']['spearman']
-        elif task_name in ['STS22']:
-            r = evaluation_results[task_name]['test']['en']['cos_sim']['spearman']
-        elif task_name in ['TwitterSemEval2015','TwitterURLCorpus','SprintDuplicateQuestions']:
-            r = evaluation_results[task_name]['test']['cos_sim']['ap']
-        elif task_name in ['AskUbuntuDupQuestions','StackOverflowDupQuestions','SciDocsRR','MindSmallReranking']:
-            r = evaluation_results[task_name]['test']['map']
-        if os.path.isdir(my_args.result_file):
-            my_args.result_file = os.path.join(my_args.result_file,f'{task_name}.txt')
-        with open(my_args.result_file,'a') as f:
-            f.write(f'{task_name}: {my_args.model_name}: {r}\n')
+        # task_name = list(evaluation_results.keys())[0]
+        # if task_name in ['MSMARCO',]:
+        #     r = evaluation_results[task_name]['dev']['ndcg_at_10']
+        # elif task_name in ['NQ','NFCorpus','SciFact','CQADupstackWebmastersRetrieval','ArguAna','CQADupstackEnglishRetrieval','CQADupstackGamingRetrieval','CQADupstackGisRetrieval','ClimateFEVER','DBPedia','FEVER','FiQA2018','CQADupstackTexRetrieval','CQADupstackUnixRetrieval','CQADupstackMathematicaRetrieval','CQADupstackStatsRetrieval','CQADupstackPhysicsRetrieval','CQADupstackProgrammersRetrieval','CQADupstackAndroidRetrieval','CQADupstackWordpressRetrieval','HotpotQA','MSMARCOv2','QuoraRetrieval','SCIDOCS','TRECCOVID','Touche2020']:
+        #     r = evaluation_results[task_name]['test']['ndcg_at_10']
+        # elif task_name in ['AmazonCounterfactualClassification','AmazonReviewsClassification','MTOPDomainClassification','MTOPIntentClassification','MassiveIntentClassification','MassiveScenarioClassification',]:
+        #     r = evaluation_results[task_name]['test']['en']['accuracy']
+        # elif task_name in ['ToxicConversationsClassification','ImdbClassification','TweetSentimentExtractionClassification','EmotionClassification','Banking77Classification','AmazonPolarityClassification',]:
+        #     r = evaluation_results[task_name]['test']['accuracy']
+        # elif task_name in ['BiorxivClusteringS2S','MedrxivClusteringS2S','TwentyNewsgroupsClustering','ArxivClusteringP2P','ArxivClusteringS2S','BiorxivClusteringP2P','MedrxivClusteringP2P','RedditClustering','RedditClusteringP2P','StackExchangeClustering','StackExchangeClusteringP2P']:
+        #     r = evaluation_results[task_name]['test']['v_measure']
+        # elif task_name in ['SummEval','STS12','STS13','STS14','STS15','STS16','BIOSSES','SICK-R','STSBenchmark']:
+        #     r = evaluation_results[task_name]['test']['cos_sim']['spearman']
+        # elif task_name in ['STS17']:
+        #     r = evaluation_results[task_name]['test']['en-en']['cos_sim']['spearman']
+        # elif task_name in ['STS22']:
+        #     r = evaluation_results[task_name]['test']['en']['cos_sim']['spearman']
+        # elif task_name in ['TwitterSemEval2015','TwitterURLCorpus','SprintDuplicateQuestions']:
+        #     r = evaluation_results[task_name]['test']['cos_sim']['ap']
+        # elif task_name in ['AskUbuntuDupQuestions','StackOverflowDupQuestions','SciDocsRR','MindSmallReranking']:
+        #     r = evaluation_results[task_name]['test']['map']
+        # if os.path.isdir(my_args.result_file):
+        #     my_args.result_file = os.path.join(my_args.result_file,f'{task_name}.txt')
+        # with open(my_args.result_file,'a') as f:
+        #     f.write(f'{task_name}: {my_args.model_name}: {r}\n')
         return evaluation_results

@@ -4,6 +4,36 @@ import logging
 import argparse
 from mteb import MTEB
 from InstructorEmbedding import INSTRUCTOR
+
+
+# AmazonCounterfactualClassification,AmazonPolarityClassification,
+# AmazonReviewsClassification,ArguAna,ArxivClusteringP2P,ArxivClusteringS2S,AskUbuntuDupQuestions,
+# BIOSSES,BUCC,Banking77Classification,BiorxivClusteringP2P,BiorxivClusteringS2S,CQADupstackAndroidRetrieval,
+# CQADupstackEnglishRetrieval,CQADupstackGamingRetrieval,CQADupstackGisRetrieval,CQADupstackMathematicaRetrieval,
+# CQADupstackPhysicsRetrieval,CQADupstackProgrammersRetrieval,CQADupstackStatsRetrieval,CQADupstackTexRetrieval,CQADupstackUnixRetrieval,
+# CQADupstackWebmastersRetrieval,CQADupstackWordpressRetrieval,ClimateFEVER,DBPedia,EmotionClassification,
+# FEVER,FiQA2018,HotpotQA,ImdbClassification,MSMARCO,MSMARCOv2,MTOPDomainClassification,MTOPIntentClassification,
+# MassiveIntentClassification,MassiveScenarioClassification,MedrxivClusteringP2P,MedrxivClusteringS2S,MindSmallReranking,
+# NFCorpus,NQ,QuoraRetrieval,RedditClustering,RedditClusteringP2P,SCIDOCS,SICK-R,STS12,STS13,STS14,STS15,STS16,STS17,STS22,STSBenchmark,
+# SciDocsRR,SciFact,SprintDuplicateQuestions,StackExchangeClustering,StackExchangeClusteringP2P,StackOverflowDupQuestions,SummEval,TRECCOVID,
+# Tatoeba,Touche2020,ToxicConversationsClassification,
+# TweetSentimentExtractionClassification,TwentyNewsgroupsClustering,TwitterSemEval2015,TwitterURLCorpus.
+
+
+_tasks = [
+    'ArguAna',
+    'SciFact',
+    'FiQA2018',
+    'NFCorpus',
+    'QuoraRetrieval'
+    # 'MSMARCO',
+    # 'HotpotQA',
+    #  'DBPedia',
+    # 'FEVER'
+    # 'NQ',
+]
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
@@ -25,7 +55,7 @@ if __name__ == '__main__':
     #
     # tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
     model = INSTRUCTOR(args.model_name,cache_folder=args.cache_dir)
-    evaluation = MTEB(tasks=[args.task_name],task_langs=["en"])
+    evaluation = MTEB(tasks=_tasks, task_langs=["en"])
     evaluation.run(model, output_folder=args.output_dir, eval_splits=[args.split],args=args,)
 
     print("--DONE--")

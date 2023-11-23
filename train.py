@@ -361,6 +361,12 @@ class DataTrainingArguments:
             )
         },
     )
+
+    train_file_name: Optional[str] = field(
+        default="medi-data.json", 
+        metadata={"help": "The training file name"}
+    )
+
     def __post_init__(self):
         pass
 
@@ -381,6 +387,8 @@ summarization_name_mapping = {
 
 
 def main():
+    print(torch.cuda.is_available())
+
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, Seq2SeqTrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
@@ -433,7 +441,7 @@ def main():
     )
 
     set_seed(training_args.seed)
-    with open(os.path.join(model_args.cache_dir, 'medi-data.json')) as f:
+    with open(os.path.join(model_args.cache_dir, data_args.train_file_name)) as f:
         train_examples_raw = json.load(f)
 
     if data_args.debug_mode:
